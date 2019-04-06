@@ -16,4 +16,4 @@ else
     util = log(cons);
 end
 
-return;
+return

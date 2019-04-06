@@ -4,7 +4,7 @@ close all;
 %% DATA POINTS
 xmin = -1;
 xmax = 1;
-nxd = 9;
+nxd = 21;
 xd = linspace(xmin,xmax,nxd)';
 yd = 1./(1+25*xd.^2);
 nx = 1001;
@@ -64,10 +64,11 @@ y3 = T3*theta;
 figure;
 plot(x3, y3, '-', 'color', 'blue', 'linewidth', 3); hold('on');
 hold on;
+plot(xcheb, ycheb, '*', 'color', 'blue', 'MarkerSize',12, 'linewidth', 3); hold('on');
 plot(x0, y0, 'k-');
-%legend('多項式近似', 'Location', 'NorthEast');
+legend('多項式近似','評価点','Location', 'NorthEast');
 grid on;
 set(gca,'Fontsize',16);
-saveas (gcf,'Fig_cheb.eps','epsc2');
+saveas (gcf,'Fig_cheb_n21.eps','epsc2');
 
 return;
