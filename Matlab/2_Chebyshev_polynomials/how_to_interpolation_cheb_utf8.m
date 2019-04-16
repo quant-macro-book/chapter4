@@ -1,74 +1,94 @@
-%% 
+% 3節：多項式近似
 close all;
 
-%% DATA POINTS
+%% データ点
 xmin = -1;
 xmax = 1;
-nxd = 21;
-xd = linspace(xmin,xmax,nxd)';
-yd = 1./(1+25*xd.^2);
-nx = 1001;
-x0 = linspace(xmin,xmax,nx)';
-y0 = 1./(1+25*x0.^2);
+nxd = 11;
+xd = linspace(xmin, xmax, nxd)'; %collect(LinRange(xmin, xmax, nxd))
+yd = f(xd);
 
+%% 関数による値
+nx = 1001;
+x0 = linspace(xmin, xmax, nx)'; %collect(LinRange(xmin, xmax, nx))
+y0 = f(x0);
+
+%%
 figure;
-plot(x0, y0, 'k-');
+plot(x0,y0,'k-','LineWidth',1.5);
 hold on;
-plot(xd, yd, 'o', 'color', 'blue', 'MarkerSize', 12, 'linewidth', 3);
+plot(xd,yd,'bo','MarkerSize',12,'LineWidth',2.0);
 grid on;
+legend({'$\frac{1}{1+x^2}$'},'Interpreter','latex');
 set(gca,'Fontsize',16);
 saveas (gcf,'Fig_data.eps','epsc2');
 
-%% MATLAB関数を使った内挿
+%% Matlab関数(interp1)を使った線形補間による近似
+x1 = linspace(xmin, xmax, nx)';
+y1 = interp1(xd,yd,x1,'linear','extrap');
 
-x1 = linspace(xmin,xmax,nx)';
-y1 = zeros(nx, 1);
-
-for i = 1:nx
-    y1(i, 1) = interp1(xd, yd, x1(i), 'linear', 'extrap');
-end
-
-%% ordinary polynomial
-X = ones(nxd,1);
-X2 = ones(nx,1);
+%% 通常の多項式による近似
+Xd = ones(nxd,nxd);
+X2 = ones(nx,nxd);
 x2 = x1;
 for i = 1:nxd-1
-    X = [X xd.^i];
-    X2 = [X2 x2.^i];
+    Xd(:,i+1) = xd.^i;
+    X2(:,i+1) = x2.^i;
 end
-% ordinary least squares
-b = (X'*X)\(X'*yd);
+
+b = (Xd'*Xd)\(Xd'*yd);
 y2 = X2*b;
 
+%%
 figure;
-plot(x1, y1, '-', 'color', 'blue', 'linewidth', 3);
+plot(x0,y0,'k-','LineWidth',1.5);
 hold on;
-plot(x2, y2, '--', 'color', 'red', 'linewidth', 3);
-plot(x0, y0, 'k-');
-legend('線形近似', '多項式近似', 'Location', 'NorthEast');
+plot(x1,y1,'-','Color','blue','LineWidth',2.0);
+plot(x2,y2,'--','Color','red','LineWidth',2.0);
+legend({'$\frac{1}{1+x^2}$','線形近似','多項式近似'},'Interpreter','latex');
 grid on;
 set(gca,'Fontsize',16);
 saveas (gcf,'Fig_interp.eps','epsc2');
 
-%% Chebyshev polynomial
+%% チェビシェフ多項式による近似
+% N=11
+nxd = 11;
 xcheb = polygrid(xmin,xmax,nxd);
-ycheb = 1./(1+25*xcheb.^2);
+ycheb = f(xcheb); %#ones(nxd)./(ones(nxd)+25*xcheb.^2)
 T = polybas(xmin,xmax,nxd,xcheb);
 theta = T\ycheb;
 
 x3 = x1;
 T3 = polybas(xmin,xmax,nxd,x3);
-% fitting polynomial
 y3 = T3*theta;
 
 figure;
-plot(x3, y3, '-', 'color', 'blue', 'linewidth', 3); hold('on');
+plot(x0,y0,'k-','LineWidth',1.5);
 hold on;
-plot(xcheb, ycheb, '*', 'color', 'blue', 'MarkerSize',12, 'linewidth', 3); hold('on');
-plot(x0, y0, 'k-');
-legend('多項式近似','評価点','Location', 'NorthEast');
+plot(x3,y3,'-','Color','blue','LineWidth',2.0);
+plot(xcheb,ycheb,'*','Color','blue','MarkerSize',12,'LineWidth',2.0);
+legend({'$\frac{1}{1+x^2}$','多項式近似','評価点'},'Interpreter','latex'); %,'Location','NorthEast');
 grid on;
-set(gca,'Fontsize',16);
-saveas (gcf,'Fig_cheb_n21.eps','epsc2');
+set(gca,'FontSize',16);
+saveas (gcf,'Fig_cheb_n11.eps','epsc2');
 
-return;
+% N=21
+nxd = 21;
+xcheb = polygrid(xmin,xmax,nxd);
+ycheb = f(xcheb); %#ones(nxd)./(ones(nxd)+25*xcheb.^2)
+T = polybas(xmin,xmax,nxd,xcheb);
+theta = T\ycheb;
+
+x3 = x1;
+T3 = polybas(xmin,xmax,nxd,x3);
+y3 = T3*theta;
+
+figure;
+plot(x0,y0,'k-','LineWidth',1.5);
+hold on;
+plot(x3,y3,'-','Color','blue','LineWidth',2.0);
+plot(xcheb,ycheb,'*','Color','blue','MarkerSize',12,'LineWidth',2.0);
+legend({'$\frac{1}{1+x^2}$','多項式近似','評価点'},'Interpreter','latex'); %,'Location','NorthEast');
+grid on;
+set(gca,'FontSize',16);
+saveas (gcf,'Fig_cheb_n21.eps','epsc2');
