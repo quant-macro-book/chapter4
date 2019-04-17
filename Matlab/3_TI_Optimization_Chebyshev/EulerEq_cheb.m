@@ -1,21 +1,21 @@
 function  res = EulerEq_cheb(cons,m,capital,theta)
-% cã‚’ä¸ãˆãŸã¨ãã®ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼ã®æ®‹å·®ã‚’è¿”ã™é–¢æ•°
+% c‚ğ—^‚¦‚½‚Æ‚«‚ÌƒIƒCƒ‰[•û’ö®‚Ìc·‚ğ•Ô‚·ŠÖ”
 
 wealth = capital.^m.alpha + (1.-m.delta).*capital;
 
 kprime = wealth - cons;
-% ãƒˆãƒªãƒƒã‚¯: k'ã¯æ­£ã®å€¤ã—ã‹å–ã‚‰ãªã„
+% ƒgƒŠƒbƒN: k'‚Í³‚Ì’l‚µ‚©æ‚ç‚È‚¢
 kprime = max(m.kgrid(1),kprime);
 
-% æ¬¡æœŸã®æ”¿ç­–é–¢æ•°ã‚’ç·šå½¢è£œé–“: m.nk=21ã®ã¨ãã¯æ”¿ç­–é–¢æ•°ã®å½¢ãŒãŠã‹ã—ã„???
+% ŸŠú‚Ì­ôŠÖ”‚ğüŒ`•âŠÔ: m.nk=21‚Ì‚Æ‚«‚Í­ôŠÖ”‚ÌŒ`‚ª‚¨‚©‚µ‚¢???
 %cnext = interp1(m.kgrid,cfcn,kprime,'linear','extrap');
-% æ¬¡æœŸã®ä¾¡å€¤é–¢æ•°ã‚’ã‚¹ãƒ—ãƒ©ã‚¤ãƒ³è£œé–“
+% ŸŠú‚Ì‰¿’lŠÖ”‚ğƒXƒvƒ‰ƒCƒ“•âŠÔ
 %cnext = interp1(m.kgrid,cfcn,kprime,'spline');
-% æ¬¡æœŸã®ä¾¡å€¤é–¢æ•°ã‚’å¤šé …å¼è£œé–“
+% ŸŠú‚Ì‰¿’lŠÖ”‚ğ‘½€®•âŠÔ
 T = polybas(m.kmin,m.kmax,m.nk,kprime);
 cnext = T*theta;
 
-% ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼
+% ƒIƒCƒ‰[•û’ö®
 res = (1/cons) - m.beta*(1/cnext)*(m.alpha*kprime.^(m.alpha-1) + (1.-m.delta));
  
 return

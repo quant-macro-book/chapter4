@@ -1,18 +1,18 @@
 function  res = EulerEq(cons,m,capital,cfcn)
-% cã‚’ä¸ãˆãŸã¨ãã®ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼ã®æ®‹å·®ã‚’è¿”ã™é–¢æ•°
+% c‚ğ—^‚¦‚½‚Æ‚«‚ÌƒIƒCƒ‰[•û’ö®‚Ìc·‚ğ•Ô‚·ŠÖ”
 
 wealth = capital.^m.alpha + (1.-m.delta).*capital;
 
 kprime = wealth - cons;
-% ãƒˆãƒªãƒƒã‚¯: k'ã¯æ­£ã®å€¤ã—ã‹å–ã‚‰ãªã„
+% ƒgƒŠƒbƒN: k'‚Í³‚Ì’l‚µ‚©æ‚ç‚È‚¢
 kprime = max(m.kgrid(1),kprime);
 
-% æ¬¡æœŸã®æ”¿ç­–é–¢æ•°ã‚’ç·šå½¢è£œé–“
+% ŸŠú‚Ì­ôŠÖ”‚ğüŒ`•âŠÔ
 %cnext = interp1(m.kgrid,cfcn,kprime,'linear','extrap');
-% æ¬¡æœŸã®ä¾¡å€¤é–¢æ•°ã‚’ã‚¹ãƒ—ãƒ©ã‚¤ãƒ³è£œé–“
+% ŸŠú‚Ì‰¿’lŠÖ”‚ğƒXƒvƒ‰ƒCƒ“•âŠÔ
 cnext = interp1(m.kgrid,cfcn,kprime,'spline');
 
-%% ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼
+%% ƒIƒCƒ‰[•û’ö®
 res = (1/cons) - m.beta*(1/cnext)*(m.alpha*kprime.^(m.alpha-1) + (1.-m.delta));
  
 return

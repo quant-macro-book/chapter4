@@ -1,31 +1,31 @@
 function [cfcn0 dif] = nti_cheb(m)
 
-options = optimoptions('fsolve','Display','none'); % fsolveã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³(æœ€é©åŒ–ã®çµæœã‚’éè¡¨ç¤ºã«ã™ã‚‹)
+options = optimoptions('fsolve','Display','none'); % fsolve‚ÌƒIƒvƒVƒ‡ƒ“(Å“K‰»‚ÌŒ‹‰Ê‚ğ”ñ•\¦‚É‚·‚é)
 
-% *** åæŸã®åŸºæº– ***
-it = 1;          % ãƒ«ãƒ¼ãƒ—ãƒ»ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
-dif2 = 1.0;      % æ”¿ç­–é–¢æ•°ã®ç¹°ã‚Šè¿”ã—èª¤å·®
-options.TolFun = 1.0e-10; % fsolveã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³(æœ€é©åŒ–ã®è¨±å®¹èª¤å·®)
+% *** û‘©‚ÌŠî€ ***
+it = 1;          % ƒ‹[ƒvEƒJƒEƒ“ƒ^[
+dif2 = 1.0;      % ­ôŠÖ”‚ÌŒJ‚è•Ô‚µŒë·
+options.TolFun = 1.0e-10; % fsolve‚ÌƒIƒvƒVƒ‡ƒ“(Å“K‰»‚Ì‹–—eŒë·)
 
 % disp(' ')
 % disp('-+- Solve a neoclassical growth model with time iteration -+-');
 % disp(' ')
 
-%% STEP 1(b): æ”¿ç­–é–¢æ•°ã®åˆæœŸå€¤ã‚’å½“ã¦æ¨é‡
-% è§£æè§£ (for k'=g(k))
+%% STEP 1(b): ­ôŠÖ”‚Ì‰Šú’l‚ğ“–‚Ä„—Ê
+% ‰ğÍ‰ğ (for k'=g(k))
 p_true = m.beta*m.alpha*(m.kgrid.^m.alpha);
 
-% æ”¿ç­–é–¢æ•°ã®åˆæœŸåŒ–
+% ­ôŠÖ”‚Ì‰Šú‰»
 cfcn0 = m.kgrid;
 %cfcn0 = m.css/m.kss*m.kgrid;
 %cfcn0 = m.kgrid.^m.alpha - p_true;
-%cfcn0 = css*ones(nk,1);
+%cfcn0 = m.css*ones(nk,1);
 cfcn1 = zeros(m.nk,1);
 
-% ç¹°ã‚Šè¿”ã—èª¤å·®ã‚’ä¿å­˜ã™ã‚‹å¤‰æ•°ã‚’è¨­å®š 
+% ŒJ‚è•Ô‚µŒë·‚ğ•Û‘¶‚·‚é•Ï”‚ğİ’è 
 dif = zeros(2,m.maxiter);
 
-%% STEP 4: æ”¿ç­–é–¢æ•°ã‚’ç¹°ã‚Šè¿”ã—è¨ˆç®—
+%% STEP 4: ­ôŠÖ”‚ğŒJ‚è•Ô‚µŒvZ
 while (it < m.maxiter && dif2 > m.tol)
 
 %     fprintf('iteration index: %i \n', it);
@@ -38,28 +38,26 @@ while (it < m.maxiter && dif2 > m.tol)
         capital = m.kgrid(i);
         wealth = capital.^m.alpha + (1.-m.delta).*capital;
 
-        % MATLABã®æœ€é©åŒ–é–¢æ•°(fsolve)ã‚’ä½¿ã£ã¦å„ã‚°ãƒªãƒƒãƒ‰ä¸Šã®æ”¿ç­–é–¢æ•°ã®å€¤ã‚’æ¢ã™
-        % æœ€é©åŒ–ã®åˆæœŸå€¤ã¯å¤ã„æ”¿ç­–é–¢æ•°ã®å€¤
+        % MATLAB‚ÌÅ“K‰»ŠÖ”(fsolve)‚ğg‚Á‚ÄŠeƒOƒŠƒbƒhã‚Ì­ôŠÖ”‚Ì’l‚ğ’T‚·
+        % Å“K‰»‚Ì‰Šú’l‚ÍŒÃ‚¢­ôŠÖ”‚Ì’l
         cons = fsolve(@EulerEq_cheb,cfcn0(i,1),options,m,capital,theta);
-        % æœ€é©åŒ–ã®åˆæœŸå€¤ã¯å®šå¸¸çŠ¶æ…‹ã®å€¤: ã“ã‚Œã§ã¯è§£ã‘ãªã„
+        % Å“K‰»‚Ì‰Šú’l‚Í’èíó‘Ô‚Ì’l: ‚±‚ê‚Å‚Í‰ğ‚¯‚È‚¢
         % cons = fsolve(@EulerEq2,css,options,m,capital,cfcn0);
         cfcn1(i,1) = cons;
         kprime = wealth-cons;
-        % ã‚°ãƒªãƒƒãƒ‰ã”ã¨ã«æœ€é©åŒ–ã®çµæœã‚’ç¢ºèª
+        % ƒOƒŠƒbƒh‚²‚Æ‚ÉÅ“K‰»‚ÌŒ‹‰Ê‚ğŠm”F
         %disp([cons capital wealth kprime]);
         %pause
 
     end
 
-    % ç¹°ã‚Šè¿”ã—è¨ˆç®—èª¤å·®ã‚’ç¢ºèª
+    % ŒJ‚è•Ô‚µŒvZŒë·‚ğŠm”F
     dif2 = max(abs(cfcn1-cfcn0));
     
-%    disp([it dif2])
-
-    % åæŸé€”ä¸­ã®ç¹°ã‚Šè¿”ã—è¨ˆç®—èª¤å·®ã‚’ä¿å­˜
+    % û‘©“r’†‚ÌŒJ‚è•Ô‚µŒvZŒë·‚ğ•Û‘¶
     dif(2,it) = dif2;
 
-    % æ”¿ç­–é–¢æ•°ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
+    % ­ôŠÖ”‚ğƒAƒbƒvƒf[ƒg
     cfcn0 = cfcn1;
 
     it = it + 1;

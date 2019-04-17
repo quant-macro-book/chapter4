@@ -1,11 +1,11 @@
 function T = polybas(kmin,kmax,Np,kgrid)
 
-    % Np: 多項式の次数-1
-    % Ng: グリッドの数
+    % Np: �������̎���-1
+    % Ng: �O���b�h�̐�
     Ng = size(kgrid,1);
     x = (2/(kmax-kmin))*(kgrid-kmin) - 1;
     
-    % 基底関数の行列(NgxNp)を再帰的に求める
+    % ���֐��̍s��(NgxNp)���ċA�I�ɋ��߂�
     T = zeros(Ng,Np);
     T0 = ones(Ng,1);
     T1 = x;

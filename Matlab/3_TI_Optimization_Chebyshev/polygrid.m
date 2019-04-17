@@ -1,9 +1,9 @@
 function k = polygrid(kmin,kmax,N)
 
-    temp = linspace(0,N-1,N)'; %[0:N-1:1]'; % 繝√ぉ繝薙す繧ｧ繝墓･ｵ蛟､轤ｹ
+    temp = linspace(0,N-1,N)'; %[0:N-1:1]'; % チェビシェフ極値点
     x = -cos((pi/(N-1))*temp);
-%    temp = linspace(0,N-1,N)'; %[0:N-1:1]'; % 繝√ぉ繝薙す繧ｧ繝輔ぞ繝ｭ轤ｹ
+%    temp = linspace(0,N-1,N)'; %[0:N-1:1]'; % チェビシェフゼロ点
 %    x = [0; -cos((pi/2/(N-1))*(2*temp - 1))]
     
-    % x縺九ｉk縺ｫ螟画鋤
+    % xからkに変換
     k = 0.5*(kmax-kmin)*(x+1) + kmin;
