@@ -1,86 +1,80 @@
 clear all;
 
-% ƒJƒŠƒuƒŒ[ƒVƒ‡ƒ“
-m.beta  = 0.96; % Š„ˆøˆöq
-m.gamma = 1.0;  % ‘Š‘Î“IŠëŒ¯‰ñ”ğ“x(ˆÙ“_ŠÔ‚Ì‘ã‘Ö‚Ì’e—Í«‚Ì‹t”)
-m.alpha = 0.40; % ‘–{•ª”z—¦
-m.delta = 1.00; % ŒÅ’è‘–{Œ¸–Õ(delta=1.0‚Ì‚Æ‚«‚Í‰ğÍ‰ğ‚ª‘¶İ)
+% MATLABã§ã¯ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°ã‚’ä½¿ã£ã¦é–¢æ•°ã¸ã®å¤‰æ•°å—ã‘æ¸¡ã—ã‚’è¡Œã†
+% Julia, Pythondã§ã¯ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã‚’ç”¨ã„ã‚‹
+global beta gamma alpha delta kgrid
 
-% ’èíó‘Ô‚Ì’l
-m.ykss = (1/m.beta-1+m.delta)/m.alpha;
-m.kss = m.ykss^(1/(m.alpha-1));
-m.yss = m.ykss*m.kss;
-m.css = m.yss-m.delta*m.kss;
+% ã‚«ãƒªãƒ–ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³
+beta  = 0.96; % å‰²å¼•å› å­
+gamma = 1.0;  % ç›¸å¯¾çš„å±é™ºå›é¿åº¦(ç•°æ™‚ç‚¹é–“ã®ä»£æ›¿ã®å¼¾åŠ›æ€§ã®é€†æ•°)
+alpha = 0.40; % è³‡æœ¬åˆ†é…ç‡
+delta = 1.00; % å›ºå®šè³‡æœ¬æ¸›è€—(delta=1.0ã®ã¨ãã¯è§£æè§£ãŒå­˜åœ¨)
 
-m.kmax = 0.5;   % ‘–{ƒOƒŠƒbƒh‚ÌÅ‘å’l
-m.kmin = 0.05;  % ‘–{ƒOƒŠƒbƒh‚ÌÅ¬’l (0‚É‚·‚é‚Æ¶Y‚ªo—ˆ‚È‚­‚È‚é)
+% å®šå¸¸çŠ¶æ…‹ã®å€¤
+ykss = (1/beta-1+delta)/alpha;
+kss = ykss^(1/(alpha-1));
+yss = ykss*kss;
+css = yss-delta*kss;
 
-%% STEP 1(a): ƒOƒŠƒbƒh¶¬
-m.nk   = 21;    % ƒOƒŠƒbƒh‚Ì”
-m.kgrid = linspace(m.kmin, m.kmax, m.nk)';
+kmax = 0.5;   % è³‡æœ¬ã‚°ãƒªãƒƒãƒ‰ã®æœ€å¤§å€¤
+kmin = 0.05;  % è³‡æœ¬ã‚°ãƒªãƒƒãƒ‰ã®æœ€å°å€¤ (0ã«ã™ã‚‹ã¨ç”Ÿç”£ãŒå‡ºæ¥ãªããªã‚‹)
 
-m.maxiter = 1000; % ŒJ‚è•Ô‚µŒvZ‚ÌÅ‘å’l
-m.tol  = 1.0e-5;  % ‹–—eŒë·(STEP 2)
+%% STEP 1(a): ã‚°ãƒªãƒƒãƒ‰ç”Ÿæˆ
+nk   = 21;    % ã‚°ãƒªãƒƒãƒ‰ã®æ•°
+kgrid = linspace(kmin, kmax, nk)';
+
+maxiter = 1000; % ç¹°ã‚Šè¿”ã—è¨ˆç®—ã®æœ€å¤§å€¤
+tol  = 1.0e-5;  % è¨±å®¹èª¤å·®(STEP 2)
+
+% åæŸã®åŸºæº–ã«é–¢ã™ã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
+it = 1;          % ãƒ«ãƒ¼ãƒ—ãƒ»ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
+dif2 = 1.0;      % æ”¿ç­–é–¢æ•°ã®ç¹°ã‚Šè¿”ã—èª¤å·®
+options.TolFun = 1.0e-10; % fsolveã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³(æœ€é©åŒ–ã®è¨±å®¹èª¤å·®)
 
 tic;
-
-options = optimoptions('fsolve','Display','none'); % fsolve‚ÌƒIƒvƒVƒ‡ƒ“(Å“K‰»‚ÌŒ‹‰Ê‚ğ”ñ•\¦‚É‚·‚é)
-
-% *** û‘©‚ÌŠî€ ***
-it = 1;          % ƒ‹[ƒvEƒJƒEƒ“ƒ^[
-dif2 = 1.0;      % ­ôŠÖ”‚ÌŒJ‚è•Ô‚µŒë·
-%options.TolFun = 1.0e-10; % fsolve‚ÌƒIƒvƒVƒ‡ƒ“(Å“K‰»‚Ì‹–—eŒë·)
+options = optimoptions('fsolve','Display','none'); % fsolveã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³(æœ€é©åŒ–ã®çµæœã‚’éè¡¨ç¤ºã«ã™ã‚‹)
 
 disp(' ')
 disp('-+- Solve a neoclassical growth model with time iteration -+-');
 disp(' ')
 
-%% STEP 1(b): ­ôŠÖ”‚Ì‰Šú’l‚ğ“–‚Ä„—Ê
-% ‰ğÍ‰ğ (for k'=g(k))
-p_true = m.beta*m.alpha*(m.kgrid.^m.alpha);
+%% STEP 1(b): æ”¿ç­–é–¢æ•°ã®åˆæœŸå€¤ã‚’å½“ã¦æ¨é‡
+cfcn0 = kgrid;
+cfcn1 = zeros(nk,1);
 
-% ­ôŠÖ”‚Ì‰Šú‰»
-cfcn0 = m.kgrid;
-%cfcn0 = m.css/m.kss*m.kgrid; % m.nk=21‚Ì‚Æ‚«‚Í­ôŠÖ”‚ÌŒ`‚ª‚¨‚©‚µ‚¢???
-%cfcn0 = m.kgrid.^m.alpha - p_true;
-%cfcn0 = m.css*ones(nk,1);
-cfcn1 = zeros(m.nk,1);
+% ç¹°ã‚Šè¿”ã—èª¤å·®ã‚’ä¿å­˜ã™ã‚‹å¤‰æ•°ã‚’è¨­å®š 
+dif = zeros(2,maxiter);
 
-% ŒJ‚è•Ô‚µŒë·‚ğ•Û‘¶‚·‚é•Ï”‚ğİ’è 
-dif = zeros(2,m.maxiter);
+%% STEP 4: æ”¿ç­–é–¢æ•°ã‚’ç¹°ã‚Šè¿”ã—è¨ˆç®—
+while (it < maxiter && dif2 > tol)
 
-%% STEP 4: ­ôŠÖ”‚ğŒJ‚è•Ô‚µŒvZ
-while (it < m.maxiter && dif2 > m.tol)
+    for i = 1:nk
 
-    fprintf('iteration index: %i \n', it);
-    fprintf('policy function iteration error: %e\n', dif2);
+        capital = kgrid(i);
+        wealth = capital.^alpha + (1.-delta).*capital;
 
-    for i = 1:m.nk
-
-        capital = m.kgrid(i);
-        wealth = capital.^m.alpha + (1.-m.delta).*capital;
-
-        % MATLAB‚ÌÅ“K‰»ŠÖ”(fsolve)‚ğg‚Á‚ÄŠeƒOƒŠƒbƒhã‚Ì­ôŠÖ”‚Ì’l‚ğ’T‚·
-        % Å“K‰»‚Ì‰Šú’l‚ÍŒÃ‚¢­ôŠÖ”‚Ì’l
-        cons = fsolve(@EulerEq,cfcn0(i,1),options,m,capital,cfcn0);
-        % Å“K‰»‚Ì‰Šú’l‚Í’èíó‘Ô‚Ì’l: ‚±‚ê‚Å‚Í‰ğ‚¯‚È‚¢
-        % cons = fsolve(@EulerEq,css,options,m,capital,cfcn0);
+        % MATLABã®æœ€é©åŒ–é–¢æ•°(fsolve)ã‚’ä½¿ã£ã¦å„ã‚°ãƒªãƒƒãƒ‰ä¸Šã®æ”¿ç­–é–¢æ•°ã®å€¤ã‚’æ¢ã™
+        % æœ€é©åŒ–ã®åˆæœŸå€¤ã¯å¤ã„æ”¿ç­–é–¢æ•°ã®å€¤
+        cons = fsolve(@EulerEq,cfcn0(i,1),options,capital,cfcn0);
         cfcn1(i,1) = cons;
         kprime = wealth-cons;
-        % ƒOƒŠƒbƒh‚²‚Æ‚ÉÅ“K‰»‚ÌŒ‹‰Ê‚ğŠm”F
+        % ã‚°ãƒªãƒƒãƒ‰ã”ã¨ã«æœ€é©åŒ–ã®çµæœã‚’ç¢ºèª
         %disp([cons capital wealth kprime]);
         %pause
 
     end
 
-    % ŒJ‚è•Ô‚µŒvZŒë·‚ğŠm”F
+    % ç¹°ã‚Šè¿”ã—è¨ˆç®—èª¤å·®ã‚’ç¢ºèª
     dif2 = max(abs(cfcn1-cfcn0));
 
-    % û‘©“r’†‚ÌŒJ‚è•Ô‚µŒvZŒë·‚ğ•Û‘¶
+    % åæŸé€”ä¸­ã®ç¹°ã‚Šè¿”ã—è¨ˆç®—èª¤å·®ã‚’ä¿å­˜
     dif(2,it) = dif2;
-
-    % ­ôŠÖ”‚ğƒAƒbƒvƒf[ƒg
+    
+    % æ”¿ç­–é–¢æ•°ã‚’ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
     cfcn0 = cfcn1;
+
+    fprintf('iteration index: %i \n', it);
+    fprintf('policy function iteration error: %1.6f \n', dif2);
 
     it = it + 1;
 
@@ -89,49 +83,52 @@ end
 disp(' ');
 toc;
 
-%% ÅI“I‚È­ôŠÖ”‚ª“¾‚ç‚ê‚Ä‚©‚ç’™’~ŠÖ”‚ğŒvZ
-pfcn0 = m.kgrid.^m.alpha + (1-m.delta)*m.kgrid - cfcn0;
+%% æœ€çµ‚çš„ãªæ”¿ç­–é–¢æ•°ãŒå¾—ã‚‰ã‚Œã¦ã‹ã‚‰è²¯è“„é–¢æ•°ã‚’è¨ˆç®—
+pfcn0 = kgrid.^alpha + (1-delta)*kgrid - cfcn0;
 
-%% ‰ğÍ“I‰ğ
-p_true = m.beta*m.alpha*(m.kgrid.^m.alpha);
-
-%% ƒIƒCƒ‰[•û’ö®‚©‚çŒë·‚ğ‘ª’è
-% Œ³‚ÌƒOƒŠƒbƒh‚Å‚ÍƒIƒCƒ‰[•û’ö®‚ÌŒë·‚Íƒ[ƒ‚É‚È‚é‚½‚ßAƒOƒŠƒbƒh‚ğ×‚©‚­‚Æ‚é
-kgrid_err = linspace(m.kmin, m.kmax, (m.nk-1)*10+1)';
-cons = interp1(m.kgrid,cfcn0(:,1),kgrid_err); % üŒ`•âŠÔ
-LHS  = mu_CRRA(cons, m.gamma);
-
-kp   = kgrid_err.^m.alpha + (1-m.delta)*kgrid_err - cons;
-cnext = interp1(m.kgrid, cfcn0(:,1), kp);
-rent = m.alpha.*kp.^(m.alpha-1.0) - m.delta;
-RHS  = m.beta.*(1.+rent).*mu_CRRA(cnext,m.gamma);
-
-err  = RHS./LHS-1.0;
+%% è§£æçš„è§£
+p_true = beta*alpha*(kgrid.^alpha);
 
 %%
 figure;
-plot(m.kgrid, pfcn0, '-', 'Color', 'blue', 'LineWidth', 3);
+plot(kgrid, pfcn0, '-', 'Color', 'blue', 'LineWidth', 3);
 hold on;
-plot(m.kgrid, p_true, '--', 'Color', 'red', 'LineWidth', 3);
-plot(m.kgrid, m.kgrid, ':', 'Color', 'black', 'LineWidth', 2);
-xlabel('¡Šú‚Ì‘–{•Û—L—ÊFk', 'FontSize', 16);
-ylabel("ŸŠú‚Ì‘–{•Û—L—ÊFk'", 'FontSize', 16);
-xlim([m.kmin m.kmax]);
+plot(kgrid, p_true, '--', 'Color', 'red', 'LineWidth', 3);
+plot(kgrid, kgrid, ':', 'Color', 'black', 'LineWidth', 2);
+xlabel('ä»ŠæœŸã®è³‡æœ¬ä¿æœ‰é‡ï¼šk', 'FontSize', 16);
+ylabel("æ¬¡æœŸã®è³‡æœ¬ä¿æœ‰é‡ï¼šk'", 'FontSize', 16);
+xlim([kmin kmax]);
 xticks([0.05 0.1 0.2 0.3 0.4 0.5]);
 xticklabels([0.05 0.1 0.2 0.3 0.4 0.5]);
-legend('‹ß—‰ğ', '‰ğÍ“I‰ğ', '45“xü', 'Location', 'NorthWest');
+legend('è¿‘ä¼¼è§£', 'è§£æçš„è§£', '45åº¦ç·š', 'Location', 'NorthWest');
 grid on;
 set(gca,'FontSize', 16);
 saveas(gcf,'Fig_pti2.eps','epsc2');
+
+%% ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼ã‹ã‚‰èª¤å·®ã‚’æ¸¬å®š
+% å…ƒã®ã‚°ãƒªãƒƒãƒ‰ã§ã¯ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼ã®èª¤å·®ã¯ã‚¼ãƒ­ã«ãªã‚‹ãŸã‚ã€ã‚°ãƒªãƒƒãƒ‰ã‚’ç´°ã‹ãã¨ã‚‹
+kgrid_err = linspace(kmin, kmax, (nk-1)*10+1)';
+% c=h(k;b)ã®å€¤ã‚’ç·šå½¢è£œé–“
+cons = interp1(kgrid,cfcn0(:,1),kgrid_err);
+LHS  = mu_CRRA(cons, gamma);
+
+% k'=f(k)-c
+kp   = kgrid_err.^alpha + (1-delta)*kgrid_err - cons;
+% c'=h(k';b)ã®å€¤ã‚’ç·šå½¢è£œé–“
+cnext = interp1(kgrid, cfcn0(:,1), kp);
+rent = alpha.*kp.^(alpha-1.0) - delta;
+RHS  = beta.*(1.+rent).*mu_CRRA(cnext,gamma);
+
+err  = RHS./LHS-1.0;
 
 err2 = csvread("err_ndp.csv");
 figure;
 plot(kgrid_err, abs(err), '-', 'Color', 'blue', 'LineWidth', 3);
 hold on;
 plot(kgrid_err, abs(err2), '--', 'Color', 'red', 'LineWidth', 3);
-xlabel('‘–{•Û—L—ÊFk', 'FontSize', 16);
-ylabel('ƒIƒCƒ‰[•û’ö®Œë·(â‘Î’l)', 'FontSize', 16);
-xlim([m.kmin m.kmax]);
+xlabel('è³‡æœ¬ä¿æœ‰é‡ï¼šk', 'FontSize', 16);
+ylabel('ã‚ªã‚¤ãƒ©ãƒ¼æ–¹ç¨‹å¼èª¤å·®(çµ¶å¯¾å€¤)', 'FontSize', 16);
+xlim([kmin kmax]);
 xticks([0.05 0.1 0.2 0.3 0.4 0.5]);
 xticklabels([0.05 0.1 0.2 0.3 0.4 0.5]);
 legend('TI', 'VFI', 'Location', 'NorthEast');
