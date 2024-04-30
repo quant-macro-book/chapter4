@@ -1,3 +1,5 @@
 **/old
 **/.ipynb_checkpoints
 **/*.eps
+
+.DS_Store
